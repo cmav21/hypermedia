@@ -1,17 +1,27 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cookieSession = require('cookie-session');
+const passport = require("passport");
 const keys = require('./config/keys');
-//We need to load the schema and then passport(we need the schema in there)
 require('./models/User');
 require('./services/passport');
 
 
 const app = express();
 
-//requires function and sends app parameter
+app.use(cookieSession({
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    keys: [keys.cookiekey]
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 require('./routes/authRoutes')(app);
 
-mongoose.connect(keys.mongoURI, { useNewUrlParser: true });
+mongoose.connect(keys.mongoURI, { useNewUrlParser: true, useUnifiedTopology:true });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, ()=>{
+    console.log("puerto" , PORT)
+});
