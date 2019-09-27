@@ -1,46 +1,28 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+const authRoutes = require('./routes/authRoutes');
+const mongoose = require('mongoose');
+const cookieSession = require('cookie-session');
 const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const keys = require('./config/keys');
+require("./models/user");
+require('./services/passport');
+
 const PORT = process.env.PORT || 3000;
 
 const app = express();
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// passport.use(new GoogleStrategy());
-passport.use(
-	new GoogleStrategy(
-		{
-			clientID: keys.googleClientID,
-			clientSecret: keys.googleClientSecret,
-			callbackURL: '/auth/google/callback'
-		},
-		(accessToken, refreshToken, profile, done) => {
-            console.log({
-                accessToken,
-                refreshToken,
-                profile,
-                done
-            });
-        }
-	)
-);
-
-// app.use('/', (req, res) => res.send('on ta el oauth'));
-
-app.get('/auth/google', passport.authenticate('google', {
-  scope: ['profile', 'email']
+app.use(cookieSession({
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    keys: [ keys.cookieKey ]
 }));
 
-app.get('/auth/google/callback', passport.authenticate('google'));
+app.use(passport.initialize());
+app.use(passport.session());
 
-// app.get('/',(req, res)=>{
-//     res.send('<html><h1>te quiero mucho cesario</h1></html>')
-// });
+
+mongoose.connect(keys.mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
+authRoutes(app);
 
 app.listen(PORT, ()=> {
-    console.log("Escuchando en el puerto 3000")
+    console.log(`Escuchando en el puerto ${PORT}`);
 });
