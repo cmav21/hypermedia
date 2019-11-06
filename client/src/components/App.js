@@ -8,7 +8,7 @@ const Landing = () => <h2>Landing</h2>
 const SurveryNew = () => <h2>SurveryNew</h2>
 
 const App = () => (
-    <div>
+    <div className="container">
         <BrowserRouter>
             <Header />
             <Route exact path="/" component={Landing}/>
